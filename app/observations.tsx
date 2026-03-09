@@ -1,80 +1,59 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, StyleSheet, Alert, Platform } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import {
+  Alert,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+} from "react-native";
 import DateTimePicker from "../components/date-time-picker";
-
+import { S3Uploader } from "../components/s3-uploader";
 
 export default function ObservationsScreen() {
-  const [photo, setPhoto] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [date, setDate] = useState(new Date());
+  const [s3Url, setS3Url] = useState<string | null>(null);
 
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission denied", "Camera access is required to take a photo.");
+  const saveObservation = () => {
+    if (!s3Url) {
+      Alert.alert("No photo", "Please take and upload a photo first.");
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 0.5,
-    });
+    console.log("Observation note:", note);
+    console.log("Observation date:", date.toLocaleDateString());
+    console.log("Photo URL:", s3Url);
 
-    if (!result.canceled) setPhoto(result.assets[0].uri);
-  };
+    Alert.alert(
+      "Saved!",
+      `Observation saved on ${date.toLocaleDateString()}\nPhoto URL: ${s3Url}`,
+    );
 
-  const saveObservation = () => {
-    console.log("Photo URI:", photo);
-    console.log("Note:", note);
-    console.log("Date:", date.toLocaleDateString());
-    Alert.alert("Saved!", `Observation saved on ${date.toLocaleDateString()} (dummy).`);
-    setPhoto(null);
     setNote("");
+    setS3Url(null);
   };
 
-  
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <Text style={styles.title}>Record Observations</Text>
 
-    <DateTimePicker
-      value={date}
-      onChange={(newDate) => setDate(newDate)}
-    />
+      <DateTimePicker value={date} onChange={(newDate) => setDate(newDate)} />
 
+      <S3Uploader onUploadComplete={(url) => setS3Url(url)} />
 
-      {/* Photo preview */}
-      {photo ? (
-        <Image source={{ uri: photo }} style={styles.photoPreview} />
-      ) : (
-        <View style={styles.photoPlaceholder}>
-          <Text style={{ color: "#888" }}>No photo taken yet</Text>
-        </View>
-      )}
-
-      {/* Buttons */}
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.button} onPress={takePhoto}>
-          <Text style={styles.buttonText}>📸 Take Photo</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, (!photo && !note) && styles.buttonDisabled]}
-          onPress={saveObservation}
-          disabled={!photo && !note}
-        >
-          <Text style={styles.buttonText}>💾 Save Observation</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Text input */}
       <TextInput
         placeholder="Write your observation..."
         value={note}
         onChangeText={setNote}
         style={styles.input}
         multiline
+      />
+
+      <Button
+        title="💾 Save Observation"
+        onPress={saveObservation}
+        disabled={!note && !s3Url}
       />
     </ScrollView>
   );
@@ -93,53 +72,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "bold",
     marginBottom: 10,
-  },
-  dateButton: {
-    backgroundColor: "#e0f2f1",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  dateButtonText: {
-    fontSize: 16,
-    color: "#00796b",
-    fontWeight: "500",
-  },
-  photoPreview: {
-    width: 250,
-    height: 250,
-    borderRadius: 12,
-    marginVertical: 10,
-  },
-  photoPlaceholder: {
-    width: 250,
-    height: 250,
-    borderRadius: 12,
-    backgroundColor: "#eee",
-    justifyContent: "center",
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "90%",
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    backgroundColor: "#4CAF50",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonDisabled: {
-    backgroundColor: "#a5d6a7",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
-    fontSize: 16,
   },
   input: {
     borderWidth: 1,
