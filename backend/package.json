@@ -4,10 +4,12 @@
   "type": "commonjs",
   "scripts": {
     "start": "node -r ts-node/register server.ts",
-    "dev": "nodemon --watch './**/*.ts' --exec ts-node server.ts"
+    "dev": "nodemon --watch './**/*.ts' --exec ts-node server.ts",
+    "migrate": "dotenv -- node-pg-migrate up"
   },
   "devDependencies": {
     "@types/node": "^20.5.1",
+    "dotenv-cli": "^11.0.0",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"

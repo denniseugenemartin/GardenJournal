@@ -1,13 +1,12 @@
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
-export const shorthands = undefined;
+const shorthands = undefined;
 
 /**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param {import('node-pg-migrate').MigrationBuilder} pgm
  */
-export const up = (pgm) => {
-  // Create the observations table
+const up = (pgm) => {
   pgm.createTable("observations", {
     id: "id", // serial primary key
     species: { type: "varchar(100)", notNull: true },
@@ -27,9 +26,11 @@ export const up = (pgm) => {
 };
 
 /**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param {import('node-pg-migrate').MigrationBuilder} pgm
  */
-export const down = (pgm) => {
-  // Drop the observations table on rollback
+const down = (pgm) => {
   pgm.dropTable("observations");
 };
+
+// CommonJS export
+module.exports = { shorthands, up, down };
