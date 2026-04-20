@@ -3,7 +3,11 @@ dotenv.config();
 
 import cors from "cors";
 import express from "express";
+import session from "express-session";
+import passport from "passport";
 import pgPromise, { IDatabase } from "pg-promise"; // combine import
+import setupGoogleStrategy from "./auth/googleoauth";
+import authRoutes from "./routes/auth";
 
 import Routes from "./routes/uploads";
 
@@ -16,7 +20,12 @@ declare module "express-serve-static-core" {
 
 // --- Runtime code ---
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Initialize pg-promise
@@ -44,7 +53,27 @@ app.use((req, res, next) => {
   next();
 });
 
-// Mount your uploads router
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      sameSite: "lax",
+    },
+  }),
+);
+
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Setup Google OAuth strategy
+setupGoogleStrategy(db);
+
+app.use("/auth", authRoutes);
 app.use(Routes);
 
 const PORT = process.env.PORT || 8081;
